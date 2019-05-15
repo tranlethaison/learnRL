@@ -1,11 +1,12 @@
 """Simple Policy Gradient
 implement with tensorflow 2.0.0
 """
+import os
+
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers, optimizers
 print('Tensorflow ' + tf.__version__)
-# tf.enable_eager_execution()
 
 import gym
 import numpy as np
@@ -13,9 +14,12 @@ import fire
 
 
 def make_model(obser_dim, n_actions):
+    activation = lambda x: tf.nn.leaky_relu(x, alpha=0.2)
+
     inputs = layers.Input((obser_dim), name="Observation")
     x = layers.Flatten()(inputs)
-    x = layers.Dense(32, activation=tf.tanh)(x)
+    x = layers.Dense(32, activation=activation)(x)
+    x = layers.Dense(32, activation=activation)(x)
     outputs = layers.Dense(n_actions, activation="linear")(x)
 
     return keras.Model(inputs, outputs)
@@ -43,10 +47,13 @@ def train_step(model, optimizer, batch, n_actions):
     return loss
 
 
+@tf.function
 def sample_action(model, obser):
     """sample action from policy"""
-    logits = model(np.expand_dims(obser, axis=0).astype(np.float32))
-    return tf.random.categorical(logits=logits, num_samples=1).numpy()[0][0]
+    # obser = np.expand_dims(obser, axis=0).astype(np.float32)
+    obser = tf.expand_dims(tf.cast(obser, tf.float32), axis=0)
+    logits = model(obser)
+    return tf.random.categorical(logits=logits, num_samples=1)[0][0]
 
 
 def train(
@@ -84,9 +91,12 @@ def train(
         # reset episode specific variables
         obser, ep_rewards, done = env.reset(), [], False
 
+        # render first episode of each epoch
+        finished_rendering_this_epoch = False
+
         while 1:
             # sample action from policy
-            action = sample_action(model, obser)
+            action = sample_action(model, obser).numpy()
 
             # batch data
             obsers.append(obser)
@@ -95,6 +105,11 @@ def train(
             # get environment feedback
             obser, reward, done, _ = env.step(action)
             ep_rewards.append(reward)
+
+            # rendering
+            if do_render \
+            and not finished_rendering_this_epoch:
+                env.render()
 
             if done:
                 ep_return, ep_len = sum(ep_rewards), len(ep_rewards)
@@ -110,11 +125,13 @@ def train(
                 # reset episode specific variables
                 obser, ep_rewards, done = env.reset(), [], False
 
+                finished_rendering_this_epoch = True
+
         # optimize policy
         batch = [
-            np.array(obsers, np.float32),
-            np.array(actions, np.uint8),
-            np.array(weights, np.float32)]
+            tf.cast(obsers, tf.float32),
+            tf.cast(actions, tf.uint8),
+            tf.cast(weights, tf.float32)]
 
         loss = train_step(model, optimizer, batch, n_actions)
 
@@ -123,4 +140,7 @@ def train(
 
 
 if __name__ == '__main__':
+    # with small network, running on CPU is faster.
+    os.environ['CUDA_VISIBLE_DEVICES'] = ''
+
     fire.Fire()
