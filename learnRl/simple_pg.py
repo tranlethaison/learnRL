@@ -14,11 +14,11 @@ import fire
 
 
 def make_model(obser_dim, n_actions):
-    activation = lambda x: tf.nn.leaky_relu(x, alpha=0.2)
+    # activation = lambda x: tf.nn.leaky_relu(x, alpha=0.1)
+    activation = tf.nn.relu6
 
     inputs = layers.Input((obser_dim), name="Observation")
     x = layers.Flatten()(inputs)
-    x = layers.Dense(32, activation=activation)(x)
     x = layers.Dense(32, activation=activation)(x)
     outputs = layers.Dense(n_actions, activation="linear")(x)
 
@@ -50,7 +50,6 @@ def train_step(model, optimizer, batch, n_actions):
 @tf.function
 def sample_action(model, obser):
     """sample action from policy"""
-    # obser = np.expand_dims(obser, axis=0).astype(np.float32)
     obser = tf.expand_dims(tf.cast(obser, tf.float32), axis=0)
     logits = model(obser)
     return tf.random.categorical(logits=logits, num_samples=1)[0][0]
@@ -58,7 +57,7 @@ def sample_action(model, obser):
 
 def train(
     env_name="CartPole-v0",
-    lr=1e-2,
+    lr=25e-3,
     n_epochs=50,
     batch_size=5000,
     do_render=False
@@ -141,6 +140,7 @@ def train(
 
 if __name__ == '__main__':
     # with small network, running on CPU is faster.
-    os.environ['CUDA_VISIBLE_DEVICES'] = ''
+    #os.environ['CUDA_VISIBLE_DEVICES'] = ''
 
     fire.Fire()
+
