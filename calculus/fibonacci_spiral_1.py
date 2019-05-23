@@ -34,7 +34,8 @@ M[0], M[1] = 0, 1
 # 1st square
 k = 1
 bl = bl_prev = (0, 0)
-axe.add_patch(patches.Rectangle(bl, width=M[k], height=M[k], fill=False))
+color = np.array(create_unique_color_uchar(k)) / 255
+axe.add_patch(patches.Rectangle(bl, width=M[k], height=M[k], fill=False, color=color))
 
 
 # Other squares
@@ -46,15 +47,12 @@ for k in range(2, n + 1):
         D[k%4][0] * [M[k-1], M[k-1]] +
         D[k%4][1] * [M[k], M[k]]
     )
-    centroid = bl + bl * D_circle[k%4]
+    centroid = bl + D_circle[k%4] * [M[k], M[k]]
 
     bl_prev = np.min([bl_prev, bl], axis=0)
 
     color = np.array(create_unique_color_uchar(k)) / 255
-    axe.add_patch(patches.Rectangle(
-        bl, width=M[k], height=M[k], fill=False,
-        color=color
-    ))
+    axe.add_patch(patches.Rectangle(bl, width=M[k], height=M[k], fill=False, color=color))
 
 # Draw
 plt.xlim(-M[k] - M[k-1], M[k])
