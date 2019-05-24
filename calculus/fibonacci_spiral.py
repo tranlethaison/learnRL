@@ -29,14 +29,14 @@ D_centroid = np.array([
 # Directions matrix of X range wrt [r, r]
 # ignore point [0, 0] for the sake of simple
 D_X = np.array([
-    [-1, 0], # left  => top-left 
+    [-1, 0], # left  => top-left
     [-1, 0], # down  => bottom-left
     [ 0, 1], # right => bottom-right
     [ 0, 1], # up    => top-right
 ])
 # Directions matrix of Y range wrt to Y range
 D_Y = np.array([
-     1, # left  => top-left 
+     1, # left  => top-left
     -1, # down  => bottom-left
     -1, # right => bottom-right
      1, # up    => top-right

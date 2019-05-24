@@ -36,8 +36,7 @@ def train_step(model, optimizer, batch, n_actions):
         logits = model(obsers)
 
         log_probs = tf.reduce_sum(
-            actions_mask * tf.nn.log_softmax(logits),
-            axis=1)
+            actions_mask * tf.nn.log_softmax(logits), axis=1)
 
         loss = -tf.reduce_mean(log_probs * weights)
 
@@ -123,7 +122,6 @@ def train(
 
                 # reset episode specific variables
                 obser, ep_rewards, done = env.reset(), [], False
-
                 finished_rendering_this_epoch = True
 
         # optimize policy
@@ -140,7 +138,7 @@ def train(
 
 if __name__ == '__main__':
     # with small network, running on CPU is faster.
-    #os.environ['CUDA_VISIBLE_DEVICES'] = ''
+    os.environ['CUDA_VISIBLE_DEVICES'] = ''
 
     fire.Fire()
 
