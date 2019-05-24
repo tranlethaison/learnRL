@@ -86,8 +86,6 @@ for k in range(2, n + 1):
 print('Golden ratio: {}'.format((1 + 5**0.5) / 2))
 
 # Show
-# lims = np.array([-M[k] - M[k-1], M[k]])
-# plt.xlim(lims)
-# plt.ylim(-lims[::-1])
 axe.set_aspect('equal')
+plt.grid(True)
 plt.show()
