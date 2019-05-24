@@ -1,15 +1,17 @@
+# Fibonacci spiral calculated with Golden Ratio
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
 from utils import create_unique_color_uchar
 
+
 # Plotting prepare
 fig = plt.figure()
 axe = fig.add_subplot(111)
 
 # Directions matrix for calculating bottom-left of k-th square
-# wrt [[M[k-1], M[k-1]], [M[k], M[k]]]
+# wrt [[fibo_k_1, fibo_k_1], [fibo_k, fibo_k]]
 D = np.array([
     [[0, 0], [-1,  0]],  # left
     [[0, 0], [ 0, -1]],  # down
@@ -18,7 +20,7 @@ D = np.array([
 ])
 
 # 1/4 of the circle for k-th square
-f = lambda x, r: (r**2 - x**2)**0.5
+HalfCircle = lambda x, r: (r**2 - x**2)**0.5
 # Directions matrix for calculating centroid
 D_centroid = np.array([
     [1, 0], # left
@@ -42,47 +44,52 @@ D_Y = np.array([
      1, # up    => top-right
 ])
 
-# Init Fibonacci sequence
-n = 44
-M = [None] * (n + 1)
-M[0], M[1] = 0, 1
+# Closed-form expression of Fibonacci sequence
+phi = (1 + 5**0.5) / 2
+Fibo = lambda k: (phi**k - (-phi)**-k) / 5**0.5
+n = 41 #81
 
 # 1st Fibonacci
 k = 1
+fibo_k = fibo_k_1 = Fibo(k)
 bl = bl_prev = (0, 0)
 color = np.array(create_unique_color_uchar(k)) / 255
-axe.add_patch(patches.Rectangle(bl, width=M[k], height=M[k], fill=False, color=color))
+axe.add_patch(
+    patches.Rectangle(bl, width=fibo_k, height=fibo_k, fill=False, color=color))
 
 # k-th Fibonacci
 for k in range(2, n + 1):
-    M[k] = M[k-1] + M[k-2]
-    direction = k % 4
+    fibo_k = Fibo(k)
+    direction = (k + 3) % 4
 
     # square's bottom-left
     bl = (
         bl_prev +
-        D[direction][0] * [M[k-1], M[k-1]] +
-        D[direction][1] * [M[k], M[k]]
+        D[direction][0] * [fibo_k_1, fibo_k_1] +
+        D[direction][1] * [fibo_k, fibo_k]
     )
-    # Last square's bottom-left
-    bl_prev = np.min([bl_prev, bl], axis=0)
 
     # 1/4 circle
-    centroid = bl + D_centroid[direction] * [M[k], M[k]]
-    low, hight = [M[k], M[k]] * D_X[direction]
-    X = np.linspace(low, hight, 100)
-    Y = f(X, M[k]) * D_Y[direction]
+    centroid = bl + D_centroid[direction] * [fibo_k, fibo_k]
+    low, high = [fibo_k, fibo_k] * D_X[direction]
+    X = np.linspace(low, high, 100)
+    Y = HalfCircle(X, fibo_k) * D_Y[direction]
 
     # Plot
     color = np.array(create_unique_color_uchar(k)) / 255
-    axe.add_patch(patches.Rectangle(bl, width=M[k], height=M[k], fill=False, color=color))
+    axe.add_patch(
+        patches.Rectangle(bl, width=fibo_k, height=fibo_k, fill=False, color=color))
     axe.plot(X + centroid[0], Y + centroid[1], color=color)
+    print('{:2d}. {} / {} = {}'.format(k, fibo_k, fibo_k_1, fibo_k / fibo_k_1))
 
-    print('{:2d}. {} / {} = {}'.format(k, M[k], M[k-1], M[k] / M[k-1]))
+    # Update k-th specific parameters
+    bl_prev = np.min([bl_prev, bl], axis=0)
+    fibo_k_1 = fibo_k
+
 print('Golden ratio: {}'.format((1 + 5**0.5) / 2))
 
 # Show
-# lims = np.array([-M[k] - M[k-1], M[k]])
+# lims = np.array([-fibo_k - fibo_k_1, fibo_k])
 # plt.xlim(lims)
 # plt.ylim(-lims[::-1])
 axe.set_aspect('equal')
