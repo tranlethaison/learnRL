@@ -47,12 +47,12 @@ D_Y = np.array([
 # Closed-form expression of Fibonacci sequence
 phi = (1 + 5**0.5) / 2
 Fibo = lambda k: (phi**k - (-phi)**-k) / 5**0.5
-n = 41 #81
+n = 80
 
 # 1st Fibonacci
 k = 1
 fibo_k = fibo_k_1 = Fibo(k)
-bl = bl_prev = (0, 0)
+bl = bl_prev = np.array((0, 0))
 color = np.array(create_unique_color_uchar(k)) / 255
 axe.add_patch(
     patches.Rectangle(bl, width=fibo_k, height=fibo_k, fill=False, color=color))
@@ -60,7 +60,7 @@ axe.add_patch(
 # k-th Fibonacci
 for k in range(2, n + 1):
     fibo_k = Fibo(k)
-    direction = (k + 3) % 4
+    direction = k % 4
 
     # square's bottom-left
     bl = (

@@ -5,12 +5,13 @@ import matplotlib.patches as patches
 
 from utils import create_unique_color_uchar
 
+
 # Plotting prepare
 fig = plt.figure()
 axe = fig.add_subplot(111)
 
 # Directions matrix for calculating bottom-left of k-th square
-# wrt [[M[k-1], M[k-1]], [M[k], M[k]]]
+# wrt [[fibo[k-1], fibo[k-1]], [fibo[k], fibo[k]]]
 D = np.array([
     [[0, 0], [-1,  0]],  # left
     [[0, 0], [ 0, -1]],  # down
@@ -44,41 +45,41 @@ D_Y = np.array([
 ])
 
 # Init Fibonacci sequence
-n = 41 #81
-M = [None] * (n + 1)
-M[0], M[1] = 0, 1
+n = 80
+fibo = np.array([None] * (n + 1), np.float128)
+fibo[0], fibo[1] = 0, 1
 
 # 1st Fibonacci
 k = 1
-bl = bl_prev = (0, 0)
+bl = bl_prev = np.array([0, 0])
 color = np.array(create_unique_color_uchar(k)) / 255
 axe.add_patch(
-    patches.Rectangle(bl, width=M[k], height=M[k], fill=False, color=color))
+    patches.Rectangle(bl, width=fibo[k], height=fibo[k], fill=False, color=color))
 
 # k-th Fibonacci
 for k in range(2, n + 1):
-    M[k] = M[k-1] + M[k-2]
-    direction = (k + 3) % 4
+    fibo[k] = fibo[k-1] + fibo[k-2]
+    direction = k % 4
 
     # square's bottom-left
     bl = (
         bl_prev +
-        D[direction][0] * [M[k-1], M[k-1]] +
-        D[direction][1] * [M[k], M[k]]
+        D[direction][0] * [fibo[k-1], fibo[k-1]] +
+        D[direction][1] * [fibo[k], fibo[k]]
     )
 
     # 1/4 circle
-    centroid = bl + D_centroid[direction] * [M[k], M[k]]
-    low, high = [M[k], M[k]] * D_X[direction]
+    centroid = bl + D_centroid[direction] * [fibo[k], fibo[k]]
+    low, high = [fibo[k], fibo[k]] * D_X[direction]
     X = np.linspace(low, high, 100)
-    Y = HalfCircle(X, M[k]) * D_Y[direction]
+    Y = HalfCircle(X, fibo[k]) * D_Y[direction]
 
     # Plot
     color = np.array(create_unique_color_uchar(k)) / 255
     axe.add_patch(
-        patches.Rectangle(bl, width=M[k], height=M[k], fill=False, color=color))
+        patches.Rectangle(bl, width=fibo[k], height=fibo[k], fill=False, color=color))
     axe.plot(X + centroid[0], Y + centroid[1], color=color)
-    print('{:2d}. {} / {} = {}'.format(k, M[k], M[k-1], M[k] / M[k-1]))
+    print('{:2d}. {} / {} = {}'.format(k, fibo[k], fibo[k-1], fibo[k] / fibo[k-1]))
 
     # Update k-th specific parameters
     bl_prev = np.min([bl_prev, bl], axis=0)
