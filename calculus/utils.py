@@ -1,5 +1,6 @@
 import colorsys
 
+
 def create_unique_color_float(tag, hue_step=0.41):
     """Create a unique RGB color code for a given track id (tag).
 
@@ -20,8 +21,8 @@ def create_unique_color_float(tag, hue_step=0.41):
         RGB color code in range [0, 1]
 
     """
-    h, v = (tag * hue_step) % 1, 1. - (int(tag * hue_step) % 4) / 5.
-    r, g, b = colorsys.hsv_to_rgb(h, 1., v)
+    h, v = (tag * hue_step) % 1, 1.0 - (int(tag * hue_step) % 4) / 5.0
+    r, g, b = colorsys.hsv_to_rgb(h, 1.0, v)
     return r, g, b
 
 
@@ -46,5 +47,4 @@ def create_unique_color_uchar(tag, hue_step=0.41):
 
     """
     r, g, b = create_unique_color_float(tag, hue_step)
-    return int(255*r), int(255*g), int(255*b)
-
+    return int(255 * r), int(255 * g), int(255 * b)

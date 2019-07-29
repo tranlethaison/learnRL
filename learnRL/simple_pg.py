@@ -6,7 +6,8 @@ import os
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers, optimizers
-print('Tensorflow ' + tf.__version__)
+
+print("Tensorflow " + tf.__version__)
 
 import gym
 import numpy as np
@@ -35,8 +36,7 @@ def train_step(model, optimizer, batch, n_actions):
         # log(a|s) R(tau)
         logits = model(obsers)
 
-        log_probs = tf.reduce_sum(
-            actions_mask * tf.nn.log_softmax(logits), axis=1)
+        log_probs = tf.reduce_sum(actions_mask * tf.nn.log_softmax(logits), axis=1)
 
         loss = -tf.reduce_mean(log_probs * weights)
 
@@ -55,24 +55,25 @@ def sample_action(model, obser):
 
 
 def train(
-    env_name="CartPole-v0",
-    lr=25e-3,
-    n_epochs=50,
-    batch_size=5000,
-    do_render=False
+    env_name="CartPole-v0", lr=25e-3, n_epochs=50, batch_size=5000, do_render=False
 ):
     # make environment, check spaces, get obser / act dims
     env = gym.make(env_name)
-    assert isinstance(env.observation_space, gym.spaces.Box), \
-        "This example only works for envs with continuous state spaces."
-    assert isinstance(env.action_space, gym.spaces.Discrete), \
-        "This example only works for envs with discrete action spaces."
+    assert isinstance(
+        env.observation_space, gym.spaces.Box
+    ), "This example only works for envs with continuous state spaces."
+    assert isinstance(
+        env.action_space, gym.spaces.Discrete
+    ), "This example only works for envs with discrete action spaces."
 
     obser_dim = env.observation_space.shape
     n_actions = env.action_space.n
 
-    print('Env: {}\nobservation_dim: {}\nn_actions: {}'
-        .format(env_name, obser_dim, n_actions))
+    print(
+        "Env: {}\nobservation_dim: {}\nn_actions: {}".format(
+            env_name, obser_dim, n_actions
+        )
+    )
 
     # model, optimizer
     model = make_model(obser_dim, n_actions)
@@ -82,9 +83,9 @@ def train(
     for epoch in range(n_epochs):
         # batch data
         obsers, actions = [], []
-        weights = [] # weight for each lobprob(a|s) is R(tau)
-        returns = [] # episode returns
-        lens = [] # episode lens
+        weights = []  # weight for each lobprob(a|s) is R(tau)
+        returns = []  # episode returns
+        lens = []  # episode lens
 
         # reset episode specific variables
         obser, ep_rewards, done = env.reset(), [], False
@@ -105,8 +106,7 @@ def train(
             ep_rewards.append(reward)
 
             # rendering
-            if do_render \
-            and not finished_rendering_this_epoch:
+            if do_render and not finished_rendering_this_epoch:
                 env.render()
 
             if done:
@@ -128,17 +128,19 @@ def train(
         batch = [
             tf.cast(obsers, tf.float32),
             tf.cast(actions, tf.uint8),
-            tf.cast(weights, tf.float32)]
+            tf.cast(weights, tf.float32),
+        ]
 
         loss = train_step(model, optimizer, batch, n_actions)
 
-        print('epoch: %3d \t loss: %.3f \t return: %.3f \t ep_len: %.3f'%
-            (epoch, loss, np.mean(returns), np.mean(lens)))
+        print(
+            "epoch: %3d \t loss: %.3f \t return: %.3f \t ep_len: %.3f"
+            % (epoch, loss, np.mean(returns), np.mean(lens))
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # with small network, running on CPU is faster.
-    os.environ['CUDA_VISIBLE_DEVICES'] = ''
+    os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
     fire.Fire()
-
