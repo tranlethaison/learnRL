@@ -1,0 +1,4 @@
+tensorflow-gpu==2.0.0-beta1
+gym[atari,box2d]
+fire
+

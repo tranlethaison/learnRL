@@ -1,17 +1,16 @@
-"""Simple Policy Gradient
-implement with tensorflow 2.0.0
-"""
+"""Simple Policy Gradient"""
+
 import os
 
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers, optimizers
-
-print("Tensorflow " + tf.__version__)
-
 import gym
 import numpy as np
 import fire
+
+
+print("Tensorflow " + tf.__version__)
 
 
 def make_model(obser_dim, n_actions):
@@ -28,7 +27,7 @@ def make_model(obser_dim, n_actions):
 
 @tf.function
 def train_step(model, optimizer, batch, n_actions):
-    """1 step optimize policy"""
+    """1 step optimize policy."""
     obsers, actions, weights = batch
     actions_mask = tf.one_hot(actions, n_actions)
 
@@ -48,7 +47,7 @@ def train_step(model, optimizer, batch, n_actions):
 
 @tf.function
 def sample_action(model, obser):
-    """sample action from policy"""
+    """Sample action from policy."""
     obser = tf.expand_dims(tf.cast(obser, tf.float32), axis=0)
     logits = model(obser)
     return tf.random.categorical(logits=logits, num_samples=1)[0][0]
@@ -61,10 +60,10 @@ def train(
     env = gym.make(env_name)
     assert isinstance(
         env.observation_space, gym.spaces.Box
-    ), "This example only works for envs with continuous state spaces."
+    ), "Only works for envs with continuous state spaces."
     assert isinstance(
         env.action_space, gym.spaces.Discrete
-    ), "This example only works for envs with discrete action spaces."
+    ), "Only works for envs with discrete action spaces."
 
     obser_dim = env.observation_space.shape
     n_actions = env.action_space.n
