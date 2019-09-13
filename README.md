@@ -28,7 +28,7 @@ without messing up existing TensorFlow environment.
     $ pip install -r requirements_nogpu.txt
     ```
 
-## Algorithms
+## RL Algorithms
 
 -   [Simple Policy Gradient](learnrl/simple_pg.py)
     ```shell
@@ -38,4 +38,14 @@ without messing up existing TensorFlow environment.
         --n_epochs 50 \
         --batch_size 5000 \
         --do_render 1
+    ```
+
+## Others
+
+For the sake of learning. Let's implement Neural Networks, and training algorithms
+only using Numpy.
+
+-   [Densely connected NN](numpynn)
+    ```shell
+    $ python test/test_numpynn/dense_net.py
     ```
