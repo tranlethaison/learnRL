@@ -9,6 +9,6 @@ class MSE:
         return 0.5 * np.sum(np.square(y_predict - y_true), axis=0)
 
     @staticmethod
-    def dydy_true(y_true, y_predict):
+    def de_y_true(y_true, y_predict):
         """Return partial derivative wrt `y_true` (output activations)."""
         return y_predict - y_true

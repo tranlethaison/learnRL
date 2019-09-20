@@ -22,14 +22,15 @@ if __name__ == "__main__":
     y_train, y_val = y_train[:n], y_train[n:]
 
     def preprocess(x):
-        return np.expand_dims((x / 255.0).reshape(x.shape[0], -1), axis=-1)
+        # return np.expand_dims((x / 255.0).reshape(x.shape[0], -1), axis=-1)
+        return (x / 255.0).reshape(x.shape[0], -1)
 
     x_train = preprocess(x_train)
     x_val = preprocess(x_val)
     x_test = preprocess(x_test)
 
-    eye = np.eye(10)
-    y_train = np.expand_dims(eye[y_train], axis=-1)
+    # y_train = np.expand_dims(np.eye(10)[y_train], axis=-1)
+    y_train = np.eye(10)[y_train]
     # y_test = eye[y_test]
     # >> Data
 

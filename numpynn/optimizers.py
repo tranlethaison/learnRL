@@ -9,62 +9,42 @@ class SGD:
         self.lr = lr
 
     def optimize(self, model):
-        batch_losses = [None] * len(model.batches)
-
+        """1 epoch optimization."""
         p_batches = tqdm(model.batches)
-        for bid, (x, y) in enumerate(p_batches):
-            layers_samples_errors = [None]
-            layers_samples_errors += [
-                np.zeros((len(x), model.layers[l].units, 1), dtype=np.float64)
-                for l in range(1, len(model.layers))
-            ] 
+        for (x_train, y_train) in p_batches:
+            x, y = x_train.T, y_train.T
 
-            layers_samples_activations = [  
-                np.zeros((len(x), model.layers[l].units, 1), dtype=np.float64)
-                for l in range(len(model.layers) - 1)
-            ]
-            layers_samples_activations += [None]
+            # Feedforward
+            z = [None] * len(model.layers)
+            a = [None] * len(model.layers)
 
-            losses = [None] * len(x)
-            
-            for eid, (xx, yy) in enumerate(zip(x, y)):
-                # Feedforward
-                affines, activations = model.forward(xx)
+            a[0] = x
+            for l in range(1, len(model.layers)):
+                z[l] = (
+                    np.matmul(model.layers[l].weights, a[l - 1]) + model.layers[l].bias
+                )
+                a[l] = model.layers[l].activation.f(z[l])
 
-                losses[eid] = model.loss.f(yy, activations[-1])
+            # Ouput error
+            delta = [None] * len(model.layers)
 
-                # Output error
-                layers_samples_errors[-1][eid] = (
-                    model.loss.dydy_true(yy, activations[-1])
-                    * model.layers[-1].activation.dydx(affines[-1])
+            delta[-1] = (
+                model.loss.de_y_true(y, a[-1]) * model.layers[-1].activation.de(z[-1])
+            )
+
+            # Backpropagate
+            for l in range(len(model.layers) - 2, 0, -1):
+                delta[l] = (
+                    np.matmul(model.layers[l + 1].weights.T, delta[l + 1])
+                    * model.layers[l].activation.de(z[l])
                 )
 
-                # Backpropagate the error
-                for l in range(len(model.layers) - 2, 0, -1):
-                    layers_samples_errors[l][eid] = (
-                        np.matmul(
-                            model.layers[l + 1].weights.T, 
-                            layers_samples_errors[l + 1][eid]
-                        )
-                        * model.layers[l].activation.dydx(affines[l])
-                    )
-
-                    layers_samples_activations[l][eid] = activations[l]
-                layers_samples_activations[0][eid] = activations[0]
-
-            # Gradient descent
-            for l in range(len(model.layers) - 1, 0, -1):
-                model.layers[l].bias -= self.lr * layers_samples_errors[l].mean(axis=0)
-                model.layers[l].weights -= (
-                    self.lr 
-                    * np.matmul(
-                        layers_samples_errors[l],
-                        np.transpose(layers_samples_activations[l -1], axes=(0, 2, 1))
-                    ).mean(axis=0)
-                )
-            
-            batch_losses[bid] = np.mean(losses)
+            # Gradient Descent
+            m = x.shape[-1]
+            for l in range(1, len(model.layers)):
+                model.layers[l].weights -= self.lr / m * np.matmul(delta[l], a[l -1].T)
+                model.layers[l].bias -= self.lr * np.mean(delta[l], axis=-1, keepdims=1)
 
             p_batches.set_description("Batches")
 
-        return batch_losses
+        return 0

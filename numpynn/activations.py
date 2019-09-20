@@ -7,7 +7,8 @@ class Linear:
         return x
 
     @staticmethod
-    def dydx(x):
+    def de(x):
+        """Return derivative."""
         return 1
 
 
@@ -17,5 +18,6 @@ class Sigmoid:
         return 1.0 / (1.0 + np.exp(-x))
 
     @staticmethod
-    def dydx(x):
+    def de(x):
+        """Return derivative."""
         return Sigmoid.f(x) * (1.0 - Sigmoid.f(x))
