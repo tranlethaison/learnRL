@@ -8,11 +8,22 @@ class SGD:
     def __init__(self, lr=0.01):
         self.lr = lr
 
-    def optimize(self, model):
+    def optimize(self, model, x, y, batch_size):
         """1 epoch optimization."""
-        batch_losses = [None] * len(model.batches)
-        p_batches = tqdm(model.batches)
+        # Shuffle data
+        ids = np.arange(x.shape[0])
+        np.random.shuffle(ids)
+        x = x[ids, ...]
+        y = y[ids, ...]
 
+        batches = [
+            (x[i : i + batch_size, ...], y[i : i + batch_size, ...])
+            for i in range(0, len(x), batch_size)
+        ]
+
+        batch_losses = [None] * len(batches)
+
+        p_batches = tqdm(batches)
         for bid, (x_train, y_train) in enumerate(p_batches):
             x, y = x_train.T, y_train.T
 
@@ -32,21 +43,20 @@ class SGD:
             # Ouput error
             delta = [None] * len(model.layers)
 
-            delta[-1] = (
-                model.loss.de_y_true(y, a[-1]) * model.layers[-1].activation.de(z[-1])
+            delta[-1] = model.loss.de_y_true(y, a[-1]) * model.layers[-1].activation.de(
+                z[-1]
             )
 
             # Backpropagate
             for l in range(len(model.layers) - 2, 0, -1):
-                delta[l] = (
-                    np.matmul(model.layers[l + 1].weights.T, delta[l + 1])
-                    * model.layers[l].activation.de(z[l])
-                )
+                delta[l] = np.matmul(
+                    model.layers[l + 1].weights.T, delta[l + 1]
+                ) * model.layers[l].activation.de(z[l])
 
             # Gradient Descent
             m = x.shape[-1]
             for l in range(1, len(model.layers)):
-                model.layers[l].weights -= self.lr / m * np.matmul(delta[l], a[l -1].T)
+                model.layers[l].weights -= self.lr / m * np.matmul(delta[l], a[l - 1].T)
                 model.layers[l].bias -= self.lr * np.mean(delta[l], axis=-1, keepdims=1)
 
             p_batches.set_description("Batches")

@@ -19,8 +19,8 @@ class Dense:
         self.kernel_initializer = kernel_initializer
         self.bias_initializer = bias_initializer
 
-    def __call__(self, inputs):
-        self.inputs = inputs
+    def __call__(self, prior_layer):
+        self.prior_layer = prior_layer
         return self
 
     def init_bias(self):
@@ -28,5 +28,5 @@ class Dense:
 
     def init_weights(self):
         self.weights = self.kernel_initializer(
-            shape=(self.units, self.inputs.units), dtype=np.float64
+            shape=(self.units, self.prior_layer.units), dtype=np.float64
         )

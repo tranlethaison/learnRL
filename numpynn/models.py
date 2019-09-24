@@ -18,13 +18,13 @@ class Model:
         layers = deque()
         x = self.outputs
         while 1:
-            if not hasattr(x, "inputs"):
+            if not hasattr(x, "prior_layer"):
                 break
             x.init_bias()
             x.init_weights()
 
             layers.appendleft(x)
-            x = x.inputs
+            x = x.prior_layer
         layers.appendleft(self.inputs)
         self.layers = list(layers)
 
@@ -36,14 +36,9 @@ class Model:
         if not batch_size:
             batch_size = len(x)
 
-        self.batches = [
-            (x[i : i + batch_size], y[i : i + batch_size])
-            for i in range(0, len(x), batch_size)
-        ]
-
         for e in range(epochs):
             print("Epoch {}:".format(e))
-            loss = self.optimizer.optimize(self)
+            loss = self.optimizer.optimize(self, x, y, batch_size)
             print("Loss: {}".format(loss))
 
             if val_data:
