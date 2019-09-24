@@ -10,8 +10,10 @@ class SGD:
 
     def optimize(self, model):
         """1 epoch optimization."""
+        batch_losses = [None] * len(model.batches)
         p_batches = tqdm(model.batches)
-        for (x_train, y_train) in p_batches:
+
+        for bid, (x_train, y_train) in enumerate(p_batches):
             x, y = x_train.T, y_train.T
 
             # Feedforward
@@ -24,6 +26,8 @@ class SGD:
                     np.matmul(model.layers[l].weights, a[l - 1]) + model.layers[l].bias
                 )
                 a[l] = model.layers[l].activation.f(z[l])
+
+            batch_losses[bid] = model.loss.f(y, a[-1]).mean(axis=-1)
 
             # Ouput error
             delta = [None] * len(model.layers)
@@ -47,4 +51,4 @@ class SGD:
 
             p_batches.set_description("Batches")
 
-        return 0
+        return np.mean(batch_losses)

@@ -5,8 +5,8 @@ class MSE:
     """Mean Squared Error."""
 
     @staticmethod
-    def f(y_true, y_predict):
-        return 0.5 * np.sum(np.square(y_predict - y_true), axis=0)
+    def f(y_true, y_predict, sum_axis=0):
+        return 0.5 * np.sum(np.square(y_predict - y_true), axis=sum_axis)
 
     @staticmethod
     def de_y_true(y_true, y_predict):

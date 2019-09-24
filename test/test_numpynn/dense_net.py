@@ -22,16 +22,11 @@ if __name__ == "__main__":
     y_train, y_val = y_train[:n], y_train[n:]
 
     def preprocess(x):
-        # return np.expand_dims((x / 255.0).reshape(x.shape[0], -1), axis=-1)
         return (x / 255.0).reshape(x.shape[0], -1)
 
     x_train = preprocess(x_train)
     x_val = preprocess(x_val)
     x_test = preprocess(x_test)
-
-    # y_train = np.expand_dims(np.eye(10)[y_train], axis=-1)
-    y_train = np.eye(10)[y_train]
-    # y_test = eye[y_test]
     # >> Data
 
     inputs = Dense(784)
@@ -39,8 +34,8 @@ if __name__ == "__main__":
     outputs = Dense(10, activation=Sigmoid)(x)
 
     model = Model(inputs=inputs, outputs=outputs)
-    model.compile(optimizer=SGD(lr=3.0), loss=MSE)
+    model.compile(optimizer=SGD(lr=3.0), loss=MSE, n_classes=10)
 
-    model.fit(x_train, y_train, batch_size=10, epochs=30, test_data=(x_val, y_val))
+    model.fit(x_train, y_train, batch_size=10, epochs=30, val_data=(x_val, y_val))
     accuracy = model.evaluate(x_test, y_test) / len(x_test)
     print("Accuracy:", accuracy)

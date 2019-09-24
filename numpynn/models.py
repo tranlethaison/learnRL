@@ -10,9 +10,10 @@ class Model:
         self.inputs = inputs
         self.outputs = outputs
 
-    def compile(self, optimizer, loss):
+    def compile(self, optimizer, loss, n_classes):
         self.optimizer = optimizer
         self.loss = loss
+        self.n_classes = n_classes
 
         layers = deque()
         x = self.outputs
@@ -27,8 +28,10 @@ class Model:
         layers.appendleft(self.inputs)
         self.layers = list(layers)
 
-    def fit(self, x, y, batch_size=None, epochs=1, test_data=None):
+    def fit(self, x, y, batch_size=None, epochs=1, val_data=None):
         assert len(x) == len(y)
+
+        y = np.eye(self.n_classes)[y]
 
         if not batch_size:
             batch_size = len(x)
@@ -40,38 +43,25 @@ class Model:
 
         for e in range(epochs):
             print("Epoch {}:".format(e))
-            losses = self.optimizer.optimize(self)
-            print("Loss: {}".format(np.mean(losses)))
+            loss = self.optimizer.optimize(self)
+            print("Loss: {}".format(loss))
 
-            if test_data:
+            if val_data:
                 print(
                     "Test result: {}/{}".format(
-                        self.evaluate(*test_data), len(test_data[0])
+                        self.evaluate(*val_data), len(val_data[0])
                     )
                 )
             print()
 
-    def forward(self, a):
-        affines = [None] * len(self.layers)
-        activations = [None] * len(self.layers)
-
-        activations[0] = a
-        for l in range(1, len(self.layers)):
-            affines[l] = (
-                np.matmul(self.layers[l].weights, activations[l - 1])
-                + self.layers[l].bias
-            )
-            activations[l] = self.layers[l].activation.f(affines[l])
-
-        return affines, activations
-
     def predict(self, a):
+        a = np.expand_dims(a, axis=-1)
         for l in range(1, len(self.layers)):
             a = self.layers[l].activation.f(
                 np.matmul(self.layers[l].weights, a) + self.layers[l].bias
             )
-        return a
+        return a.argmax()
 
     def evaluate(self, x, y):
-        predicts = [self.predict(xx).argmax() for xx in x]
+        predicts = [self.predict(xx) for xx in x]
         return sum(int(p == yy) for p, yy in zip(predicts, y))
