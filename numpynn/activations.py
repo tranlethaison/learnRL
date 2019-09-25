@@ -3,21 +3,21 @@ import numpy as np
 
 class Linear:
     @staticmethod
-    def f(x):
-        return x
+    def f(z):
+        return z
 
     @staticmethod
-    def de(x):
+    def df(z):
         """Return derivative."""
         return 1
 
 
 class Sigmoid:
     @staticmethod
-    def f(x):
-        return 1.0 / (1.0 + np.exp(-x))
+    def f(z):
+        return 1.0 / (1.0 + np.exp(-z))
 
     @staticmethod
-    def de(x):
+    def df(z):
         """Return derivative."""
-        return Sigmoid.f(x) * (1.0 - Sigmoid.f(x))
+        return Sigmoid.f(z) * (1.0 - Sigmoid.f(z))

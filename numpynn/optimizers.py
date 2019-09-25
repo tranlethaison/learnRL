@@ -43,15 +43,19 @@ class SGD:
             # Ouput error
             delta = [None] * len(model.layers)
 
-            delta[-1] = model.loss.de_y_true(y, a[-1]) * model.layers[-1].activation.de(
-                z[-1]
+            delta[-1] = (
+                model.loss.df_da(y, a[-1]) * model.layers[-1].activation.df(z[-1])
             )
+
+            # With Cross-entropy + Sigmoid
+            #delta[-1] = a[-1] - y
 
             # Backpropagate
             for l in range(len(model.layers) - 2, 0, -1):
-                delta[l] = np.matmul(
-                    model.layers[l + 1].weights.T, delta[l + 1]
-                ) * model.layers[l].activation.de(z[l])
+                delta[l] = (
+                    np.matmul(model.layers[l + 1].weights.T, delta[l + 1])
+                    * model.layers[l].activation.df(z[l])
+                )
 
             # Gradient Descent
             m = x.shape[-1]

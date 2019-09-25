@@ -2,13 +2,22 @@ import numpy as np
 
 
 class MSE:
-    """Mean Squared Error."""
+    @staticmethod
+    def f(y, a):
+        return 0.5 * np.sum(np.square(y - a), axis=0)
 
     @staticmethod
-    def f(y_true, y_predict, sum_axis=0):
-        return 0.5 * np.sum(np.square(y_predict - y_true), axis=sum_axis)
+    def df_da(y, a):
+        """Return partial derivative wrt `a` (element-wise)."""
+        return a - y
+
+
+class CrossEntropy:
+    @staticmethod
+    def f(y, a):
+        return -np.sum(y * np.log(a) + (1 - y) * np.log(1 - a), axis=0)
 
     @staticmethod
-    def de_y_true(y_true, y_predict):
-        """Return partial derivative wrt `y_true` (output activations)."""
-        return y_predict - y_true
+    def df_da(y, a):
+        """Return partial derivative wrt `a` (element-wise)."""
+        return -(y / a + (y - 1) / (1 - a))

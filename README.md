@@ -45,7 +45,7 @@ without messing up existing TensorFlow environment.
 For the sake of learning. Let's implement Neural Networks, and training algorithms
 only using Numpy.
 
--   [Densely connected NN](numpynn)
+-   [Densely connected NN](test/test_numpynn/dense_net.py)
     ```shell
     $ python test/test_numpynn/dense_net.py
     ```
