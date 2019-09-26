@@ -42,3 +42,10 @@ class RandomUniform:
 
     def __call__(self, shape, dtype=None):
         return np.random.uniform(low=self.low, high=self.high, size=shape).astype(dtype)
+
+
+class StandardNormal:
+    """Return a sample (or samples) from the “standard normal” distribution.
+    """
+    def __call__(self, shape, dtype=None):
+        return np.random.randn(*shape).astype(dtype)

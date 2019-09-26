@@ -1,6 +1,9 @@
 from collections import deque
 
 import numpy as np
+import matplotlib.pyplot as plt
+
+from .visualizer import Visualizer
 
 
 class Model:
@@ -28,26 +31,36 @@ class Model:
         layers.appendleft(self.inputs)
         self.layers = list(layers)
 
-    def fit(self, x, y, batch_size=None, epochs=1, val_data=None):
+    def fit(self, x, y, batch_size=None, n_epochs=1, val_data=None):
         assert len(x) == len(y)
+
+        vis = Visualizer(n_epochs)
 
         y = np.eye(self.n_classes)[y]
 
         if not batch_size:
             batch_size = len(x)
 
-        for e in range(epochs):
+        for e in range(n_epochs):
             print("Epoch {}:".format(e))
-            loss = self.optimizer.optimize(self, x, y, batch_size)
+
+            loss = np.mean(
+                [
+                    np.mean(sample_losses)
+                    for sample_losses in self.optimizer.optimize(self, x, y, batch_size)
+                ]
+            )
             print("Loss: {}".format(loss))
+            vis.update_loss(loss)
 
             if val_data:
-                print(
-                    "Test result: {}/{}".format(
-                        self.evaluate(*val_data), len(val_data[0])
-                    )
-                )
+                accuracy = self.evaluate(*val_data) / len(val_data[0])
+                print("Validation accuracy: {}".format(accuracy))
+                vis.update_accu(accuracy)
             print()
+
+            plt.pause(0.05)
+        plt.show()
 
     def predict(self, a):
         a = np.expand_dims(a, axis=-1)
@@ -59,4 +72,5 @@ class Model:
 
     def evaluate(self, x, y):
         predicts = [self.predict(xx) for xx in x]
-        return sum(int(p == yy) for p, yy in zip(predicts, y))
+        accuracy = sum(int(p == yy) for p, yy in zip(predicts, y))
+        return accuracy

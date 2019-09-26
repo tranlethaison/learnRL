@@ -21,8 +21,6 @@ class SGD:
             for i in range(0, len(x), batch_size)
         ]
 
-        batch_losses = [None] * len(batches)
-
         p_batches = tqdm(batches)
         for bid, (x_train, y_train) in enumerate(p_batches):
             x, y = x_train.T, y_train.T
@@ -38,7 +36,7 @@ class SGD:
                 )
                 a[l] = model.layers[l].activation.f(z[l])
 
-            batch_losses[bid] = model.loss.f(y, a[-1]).mean(axis=-1)
+            losses = model.loss.f(y, a[-1])
 
             # Ouput error
             delta = [None] * len(model.layers)
@@ -64,5 +62,5 @@ class SGD:
                 model.layers[l].bias -= self.lr * np.mean(delta[l], axis=-1, keepdims=1)
 
             p_batches.set_description("Batches")
-
-        return np.mean(batch_losses)
+            
+            yield losses
