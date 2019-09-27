@@ -42,10 +42,24 @@ without messing up existing TensorFlow environment.
 
 ## Others
 
-For the sake of learning. Let's implement Neural Networks, and training algorithms
-only using Numpy.
+For learning sake. Let's implement Neural Networks, and training algorithms
+only using Numpy. ([numpynn](numpynn) module)
 
--   [Densely connected NN](test/test_numpynn/dense_net.py)
+### Densely connected NN
+    
+Train a MNIST model with [Output activation] - [Loss].
+
+-   Sigmoid - MSE
     ```shell
-    $ python test/test_numpynn/dense_net.py
+    $ python test_numpynn.py sigmoid_mse
+    ```
+
+-   Sigmoid - Cross-entropy
+    ```shell
+    $ python test_numpynn.py sigmoid_cross_entropy
+    ```
+
+-   Softmax - Log-likelihood
+    ```shell
+    $ python test_numpynn.py softmax_loglikelihood
     ```

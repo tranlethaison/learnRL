@@ -21,3 +21,24 @@ class CrossEntropy:
     def df_da(y, a):
         """Return partial derivative wrt `a` (element-wise)."""
         return -(y / a + (y - 1) / (1 - a))
+
+
+class LogLikelihood:
+    @staticmethod
+    def f(y, a):
+        j = np.argmax(y, axis=0)
+        losses = np.zeros(j.shape)
+
+        for sid in range(len(losses)):
+            losses[sid] = -np.log(a[j[sid], sid])
+        return losses
+
+    @staticmethod
+    def df_da(y, a):
+        """Return partial derivative wrt `a` (element-wise)."""
+        j = np.argmax(y, axis=0)
+        r = np.zeros(a.shape)
+
+        for sid in range(r.shape[-1]):
+            r[:, sid] = -1 / a[j[sid], sid]
+        return r

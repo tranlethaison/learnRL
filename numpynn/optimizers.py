@@ -1,6 +1,9 @@
 import numpy as np
 from tqdm import tqdm
 
+from .losses import *
+from .activations import *
+
 
 class SGD:
     """Stochatic Gradient Descent"""
@@ -41,12 +44,25 @@ class SGD:
             # Ouput error
             delta = [None] * len(model.layers)
 
-            delta[-1] = (
-                model.loss.df_da(y, a[-1]) * model.layers[-1].activation.df(z[-1])
-            )
-
-            # With Cross-entropy + Sigmoid
-            #delta[-1] = a[-1] - y
+            if (
+                model.loss is CrossEntropy
+                and model.layers[-1].activation is Sigmoid
+            ):
+                delta[-1] = a[-1] - y
+            elif (
+                model.loss is LogLikelihood
+                and model.layers[-1].activation is Softmax
+            ):
+                #j = np.argmax(y, axis=0)
+                #delta[-1] = (
+                #    model.loss.df_da(y, a[-1])
+                #    * model.layers[-1].activation.df(z[-1], j)
+                #)
+                delta[-1] = a[-1] - y
+            else:
+                delta[-1] = (
+                    model.loss.df_da(y, a[-1]) * model.layers[-1].activation.df(z[-1])
+                )
 
             # Backpropagate
             for l in range(len(model.layers) - 2, 0, -1):
