@@ -4,7 +4,7 @@ import numpy as np
 class MSE:
     @staticmethod
     def f(y, a):
-        return 0.5 * np.sum(np.square(y - a), axis=0)
+        return np.mean(0.5 * np.sum(np.square(y - a), axis=0))
 
     @staticmethod
     def df_da(y, a):
@@ -15,7 +15,7 @@ class MSE:
 class CrossEntropy:
     @staticmethod
     def f(y, a):
-        return -np.sum(y * np.log(a) + (1 - y) * np.log(1 - a), axis=0)
+        return np.mean(-np.sum(y * np.log(a) + (1 - y) * np.log(1 - a), axis=0))
 
     @staticmethod
     def df_da(y, a):
@@ -31,7 +31,7 @@ class LogLikelihood:
 
         for sid in range(len(losses)):
             losses[sid] = -np.log(a[j[sid], sid])
-        return losses
+        return np.mean(losses)
 
     @staticmethod
     def df_da(y, a):

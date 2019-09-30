@@ -13,10 +13,11 @@ class Model:
         self.inputs = inputs
         self.outputs = outputs
 
-    def compile(self, optimizer, loss, n_classes):
+    def compile(self, optimizer, loss, n_classes, regularizer):
         self.optimizer = optimizer
         self.loss = loss
         self.n_classes = n_classes
+        self.regularizer = regularizer
 
         layers = deque()
         x = self.outputs
@@ -33,6 +34,7 @@ class Model:
 
     def fit(self, x, y, batch_size=None, n_epochs=1, val_data=None):
         assert len(x) == len(y)
+        n = len(x)
 
         vis = Visualizer(n_epochs)
 
@@ -44,25 +46,23 @@ class Model:
         for e in range(n_epochs):
             print("Epoch {}:".format(e))
 
-            loss = np.mean(
-                [
-                    np.mean(sample_losses)
-                    for sample_losses in self.optimizer.optimize(
-                        self, x, y_onehot, batch_size
-                    )
-                ]
-            )
+            loss = self.optimizer.optimize(self, x, y_onehot, batch_size)
             accu = self.evaluate(x, y)
             print("Loss: {}\tAccu: {}".format(loss, accu), end="\t")
 
             val_loss, val_accu = None, None
             if val_data:
                 x_test, y_test = val_data
+
                 y_test_onehot = np.eye(self.n_classes)[y_test]
                 a_test = self.predict(x_test)
+                weights = [layer.weights for layer in self.layers[1:]]
+                val_loss = (
+                    self.loss.f(y_test_onehot.T, a_test.T) 
+                    + self.regularizer(n, weights)
+                )
 
-                val_loss = self.loss.f(y_test_onehot.T, a_test.T).mean()
-                val_accu = self.evaluate(*val_data)
+                val_accu = self.evaluate(x_test, y_test)
                 print("Val_loss: {}\tVal_accu: {}".format(val_loss, val_accu))
             print()
 
@@ -81,4 +81,4 @@ class Model:
 
     def evaluate(self, x, y):
         predicts = self.predict(x).argmax(axis=-1)
-        return len(np.where(y == predicts)[0]) / len(y) 
+        return len(np.where(y == predicts)[0]) / len(y)

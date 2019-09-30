@@ -8,6 +8,7 @@ from numpynn.initializers import RandomNormal, RandomUniform, Zeros, StandardNor
 from numpynn.models import Model
 from numpynn.optimizers import SGD
 from numpynn.losses import MSE, CrossEntropy, LogLikelihood
+from numpynn.regularizers import L2
 
 
 def sigmoid_mse():
@@ -27,8 +28,8 @@ def sigmoid_mse():
     )(x)
 
     model = Model(inputs=inputs, outputs=outputs)
-    model.compile(optimizer=SGD(lr=3.0), loss=MSE, n_classes=10)
-    return model
+    cfg = {"lr": 3.0, "loss": MSE}
+    return model, cfg
 
 
 def sigmoid_cross_entropy():
@@ -48,8 +49,8 @@ def sigmoid_cross_entropy():
     )(x)
 
     model = Model(inputs=inputs, outputs=outputs)
-    model.compile(optimizer=SGD(lr=0.5), loss=CrossEntropy, n_classes=10)
-    return model
+    cfg = {"lr": 0.5, "loss": CrossEntropy}
+    return model, cfg
 
 
 def softmax_loglikelihood():
@@ -69,11 +70,11 @@ def softmax_loglikelihood():
     )(x)
 
     model = Model(inputs=inputs, outputs=outputs)
-    model.compile(optimizer=SGD(lr=0.5), loss=LogLikelihood, n_classes=10)
-    return model
+    cfg = {"lr": 0.5, "loss": LogLikelihood}
+    return model, cfg
 
 
-def train(model):
+def train(model, cfg):
     # << Data
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
     # (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
@@ -90,12 +91,15 @@ def train(model):
     x_test = preprocess(x_test)
     # >> Data
 
+    model.compile(
+        optimizer=SGD(cfg["lr"]), loss=cfg["loss"], n_classes=10, regularizer=L2(5.0)
+    )
     model.fit(x_train, y_train, batch_size=10, n_epochs=30, val_data=(x_val, y_val))
     accuracy = model.evaluate(x_test, y_test)
     print("Accuracy:", accuracy)
 
 
-def overfit_test(model):
+def overfit_test(model, cfg):
     # << Data
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
     # (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
@@ -112,14 +116,17 @@ def overfit_test(model):
     x_test = preprocess(x_test)
     # >> Data
 
+    model.compile(
+        optimizer=SGD(cfg["lr"]), loss=cfg["loss"], n_classes=10, regularizer=L2(0.1)
+    )
     model.fit(x_train, y_train, batch_size=10, n_epochs=400, val_data=(x_val, y_val))
     accuracy = model.evaluate(x_test, y_test)
     print("Accuracy:", accuracy)
-    
+
 
 def main(model_nm="softmax_loglikelihood", action="train"):
-    model = globals()[model_nm]()
-    globals()[action](model)
+    model, cfg = globals()[model_nm]()
+    globals()[action](model, cfg)
 
 
 if __name__ == "__main__":

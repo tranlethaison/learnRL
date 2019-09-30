@@ -19,14 +19,17 @@ class SGD:
         x = x[ids, ...]
         y = y[ids, ...]
 
+        n = len(x)
+
         batches = [
             (x[i : i + batch_size, ...], y[i : i + batch_size, ...])
             for i in range(0, len(x), batch_size)
         ]
+        losses = [None] * len(batches)
 
         p_batches = tqdm(batches)
-        for bid, (x_train, y_train) in enumerate(p_batches):
-            x, y = x_train.T, y_train.T
+        for bid, (x, y) in enumerate(p_batches):
+            x, y = x.T, y.T
 
             # Feedforward
             z = [None] * len(model.layers)
@@ -39,7 +42,8 @@ class SGD:
                 )
                 a[l] = model.layers[l].activation.f(z[l])
 
-            losses = model.loss.f(y, a[-1])
+            weights = [layer.weights for layer in model.layers[1:]]
+            losses[bid] = model.loss.f(y, a[-1]) + model.regularizer(n, weights)
 
             # Ouput error
             delta = [None] * len(model.layers)
@@ -73,10 +77,15 @@ class SGD:
 
             # Gradient Descent
             m = x.shape[-1]
+
             for l in range(1, len(model.layers)):
-                model.layers[l].weights -= self.lr / m * np.matmul(delta[l], a[l - 1].T)
+                model.layers[l].weights = ( 
+                    model.regularizer.weight_scale_factor(self.lr, n) 
+                    * model.layers[l].weights 
+                    - self.lr / m * np.matmul(delta[l], a[l - 1].T)
+                )
+
                 model.layers[l].bias -= self.lr * np.mean(delta[l], axis=-1, keepdims=1)
 
             p_batches.set_description("Batches")
-            
-            yield losses
+        return np.mean(losses)
