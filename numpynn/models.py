@@ -36,7 +36,7 @@ class Model:
 
         vis = Visualizer(n_epochs)
 
-        y = np.eye(self.n_classes)[y]
+        y_onehot = np.eye(self.n_classes)[y]
 
         if not batch_size:
             batch_size = len(x)
@@ -47,30 +47,38 @@ class Model:
             loss = np.mean(
                 [
                     np.mean(sample_losses)
-                    for sample_losses in self.optimizer.optimize(self, x, y, batch_size)
+                    for sample_losses in self.optimizer.optimize(
+                        self, x, y_onehot, batch_size
+                    )
                 ]
             )
-            print("Loss: {}".format(loss))
-            vis.update_loss(loss)
+            accu = self.evaluate(x, y)
+            print("Loss: {}\tAccu: {}".format(loss, accu), end="\t")
 
+            val_loss, val_accu = None, None
             if val_data:
-                accuracy = self.evaluate(*val_data) / len(val_data[0])
-                print("Validation accuracy: {}".format(accuracy))
-                vis.update_accu(accuracy)
+                x_test, y_test = val_data
+                y_test_onehot = np.eye(self.n_classes)[y_test]
+                a_test = self.predict(x_test)
+
+                val_loss = self.loss.f(y_test_onehot.T, a_test.T).mean()
+                val_accu = self.evaluate(*val_data)
+                print("Val_loss: {}\tVal_accu: {}".format(val_loss, val_accu))
             print()
 
+            vis.update_loss(loss, val_loss)
+            vis.update_accu(accu, val_accu)
             plt.pause(0.05)
         plt.show()
 
-    def predict(self, a):
-        a = np.expand_dims(a, axis=-1)
+    def predict(self, x):
+        a = x.T
         for l in range(1, len(self.layers)):
             a = self.layers[l].activation.f(
                 np.matmul(self.layers[l].weights, a) + self.layers[l].bias
             )
-        return a.argmax()
+        return a.T
 
     def evaluate(self, x, y):
-        predicts = [self.predict(xx) for xx in x]
-        accuracy = sum(int(p == yy) for p, yy in zip(predicts, y))
-        return accuracy
+        predicts = self.predict(x).argmax(axis=-1)
+        return len(np.where(y == predicts)[0]) / len(y) 
