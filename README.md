@@ -51,15 +51,15 @@ Train a MNIST model with [Output activation] - [Loss].
 
 -   Sigmoid - MSE
     ```shell
-    $ python test_numpynn.py sigmoid_mse
+    $ python test_numpynn.py sigmoid_mse train
     ```
 
 -   Sigmoid - Cross-entropy
     ```shell
-    $ python test_numpynn.py sigmoid_cross_entropy
+    $ python test_numpynn.py sigmoid_cross_entropy train
     ```
 
 -   Softmax - Log-likelihood
     ```shell
-    $ python test_numpynn.py softmax_loglikelihood
+    $ python test_numpynn.py softmax_loglikelihood train
     ```
