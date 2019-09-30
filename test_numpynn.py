@@ -113,7 +113,7 @@ def overfit_test(model):
     # >> Data
 
     model.fit(x_train, y_train, batch_size=10, n_epochs=400, val_data=(x_val, y_val))
-    accuracy = model.evaluate(x_test, y_test) / len(x_test)
+    accuracy = model.evaluate(x_test, y_test)
     print("Accuracy:", accuracy)
     
 
