@@ -42,8 +42,13 @@ class SGD:
                 )
                 a[l] = model.layers[l].activation.f(z[l])
 
-            weights = [layer.weights for layer in model.layers[1:]]
-            losses[bid] = model.loss.f(y, a[-1]) + model.regularizer(n, weights)
+            if model.regularizer:
+                weights = [layer.weights for layer in model.layers[1:]]
+                regularization = model.regularizer(n, weights)
+            else:
+                regularization = 0
+
+            losses[bid] = model.loss.f(y, a[-1]) + regularization
 
             # Ouput error
             delta = [None] * len(model.layers)
@@ -77,10 +82,14 @@ class SGD:
 
             # Gradient Descent
             m = x.shape[-1]
+            if model.regularizer:
+                weight_scale_factor = model.regularizer.weight_scale_factor(self.lr, n) 
+            else:
+                weight_scale_factor = 1
 
             for l in range(1, len(model.layers)):
                 model.layers[l].weights = ( 
-                    model.regularizer.weight_scale_factor(self.lr, n) 
+                    weight_scale_factor 
                     * model.layers[l].weights 
                     - self.lr / m * np.matmul(delta[l], a[l - 1].T)
                 )

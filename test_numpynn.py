@@ -92,6 +92,7 @@ def train(model, cfg):
     # >> Data
 
     model.compile(
+        #optimizer=SGD(cfg["lr"]), loss=cfg["loss"], n_classes=10, regularizer=None
         optimizer=SGD(cfg["lr"]), loss=cfg["loss"], n_classes=10, regularizer=L2(5.0)
     )
     model.fit(x_train, y_train, batch_size=10, n_epochs=30, val_data=(x_val, y_val))
@@ -117,6 +118,7 @@ def overfit_test(model, cfg):
     # >> Data
 
     model.compile(
+        #optimizer=SGD(cfg["lr"]), loss=cfg["loss"], n_classes=10, regularizer=None
         optimizer=SGD(cfg["lr"]), loss=cfg["loss"], n_classes=10, regularizer=L2(0.1)
     )
     model.fit(x_train, y_train, batch_size=10, n_epochs=400, val_data=(x_val, y_val))
